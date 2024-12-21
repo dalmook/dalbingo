@@ -131,10 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.width = containerWidth;
         canvas.height = containerHeight;
 
-        // 캔버스 CSS 크기도 동일하게 설정
-        canvas.style.width = `${containerWidth}px`;
-        canvas.style.height = `${containerHeight}px`;
-
         // 선 다시 그리기
         redrawLines();
     }
