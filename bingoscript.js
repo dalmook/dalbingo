@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let markedCells = new Set();
     let linesCompleted = 0;
     let completedLineTypes = new Set(); // To track which lines have been completed
+    let linesToDrawHistory = []; // 기록된 선을 저장
 
     // 초기 설정 화면 표시
     showScreen('settings');
@@ -81,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
         linesCompleted = 0;
         completedLineTypes.clear();
         completedLinesDisplay.textContent = linesCompleted;
+        linesToDrawHistory = [];
 
         // 캔버스 초기화
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -91,6 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 캔버스 크기 조정
         adjustCanvasSize();
+
+        // 창 크기 변경 시 캔버스 다시 조정 및 선 다시 그리기
+        window.addEventListener('resize', handleResize);
     }
 
     function resetGame() {
@@ -105,8 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createBingoGrid() {
         // 빙고판 그리드 설정
-        bingoContainer.style.gridTemplateColumns = `repeat(${boardSize}, 60px)`;
-        bingoContainer.style.gridTemplateRows = `repeat(${boardSize}, 60px)`;
+        bingoContainer.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+        bingoContainer.style.gridTemplateRows = `repeat(${boardSize}, 1fr)`;
 
         bingoNumbers.forEach((num, index) => {
             const cell = document.createElement('div');
@@ -129,6 +134,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // 캔버스 CSS 크기도 동일하게 설정
         canvas.style.width = `${containerWidth}px`;
         canvas.style.height = `${containerHeight}px`;
+
+        // 선 다시 그리기
+        redrawLines();
+    }
+
+    function handleResize() {
+        adjustCanvasSize();
     }
 
     function handleCellClick(cell, index) {
@@ -211,77 +223,92 @@ document.addEventListener('DOMContentLoaded', () => {
             linesCompleted += newLines;
             completedLinesDisplay.textContent = linesCompleted;
 
-            // 줄 그리기
-            linesToDraw.forEach(line => drawLine(line));
+            // 줄 그리기 및 기록
+            linesToDraw.forEach(line => {
+                drawLine(line);
+                linesToDrawHistory.push(line);
+            });
         }
     }
 
     function drawLine(line) {
-        const cellSize = 60; // CSS에서 정의한 셀 크기
+        // 선 그리기 로직을 배열로 저장
+        drawSingleLine(line);
+    }
+
+    function drawSingleLine(line) {
+        // 첫 번째 셀의 크기와 간격을 가져옵니다.
+        const firstCell = bingoContainer.querySelector('.bingo-cell');
+        if (!firstCell) return;
+
+        const cellSize = firstCell.clientWidth;
+        const gap = parseInt(getComputedStyle(bingoContainer).gap) || 0;
 
         switch (line.type) {
             case 'row':
-                drawHorizontalLine(line.index);
+                drawHorizontalLine(line.index, cellSize, gap);
                 break;
             case 'col':
-                drawVerticalLine(line.index);
+                drawVerticalLine(line.index, cellSize, gap);
                 break;
             case 'diag1':
-                drawDiagonalLine(1);
+                drawDiagonalLine(1, cellSize, gap);
                 break;
             case 'diag2':
-                drawDiagonalLine(2);
+                drawDiagonalLine(2, cellSize, gap);
                 break;
             default:
                 break;
         }
     }
 
-    function drawHorizontalLine(rowIndex) {
-        const cellSize = 60;
+    function redrawLines() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        linesToDrawHistory.forEach(line => drawSingleLine(line));
+    }
+
+    function drawHorizontalLine(rowIndex, cellSize, gap) {
         const startX = 0;
-        const startY = rowIndex * cellSize + cellSize / 2;
-        const endX = boardSize * cellSize;
+        const startY = rowIndex * (cellSize + gap) + cellSize / 2;
+        const endX = boardSize * cellSize + (boardSize - 1) * gap;
         const endY = startY;
 
-        ctx.strokeStyle = '#ff5733'; // 활기찬 색상
-        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#000'; // 검정색으로 변경
+        ctx.lineWidth = 1; // 선 굵기를 1px로 조정
         ctx.beginPath();
         ctx.moveTo(startX, startY);
         ctx.lineTo(endX, endY);
         ctx.stroke();
     }
 
-    function drawVerticalLine(colIndex) {
-        const cellSize = 60;
-        const startX = colIndex * cellSize + cellSize / 2;
+    function drawVerticalLine(colIndex, cellSize, gap) {
+        const startX = colIndex * (cellSize + gap) + cellSize / 2;
         const startY = 0;
         const endX = startX;
-        const endY = boardSize * cellSize;
+        const endY = boardSize * cellSize + (boardSize - 1) * gap;
 
-        ctx.strokeStyle = '#ff5733';
-        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#000'; // 검정색으로 변경
+        ctx.lineWidth = 1; // 선 굵기를 1px로 조정
         ctx.beginPath();
         ctx.moveTo(startX, startY);
         ctx.lineTo(endX, endY);
         ctx.stroke();
     }
 
-    function drawDiagonalLine(type) {
-        const cellSize = 60;
+    function drawDiagonalLine(type, cellSize, gap) {
         if (type === 1) { // 좌상단 -> 우하단
-            ctx.strokeStyle = '#ff5733';
-            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#000'; // 검정색으로 변경
+            ctx.lineWidth = 1; // 선 굵기를 1px로 조정
             ctx.beginPath();
             ctx.moveTo(0, 0);
-            ctx.lineTo(boardSize * cellSize, boardSize * cellSize);
+            ctx.lineTo(boardSize * cellSize + (boardSize - 1) * gap, boardSize * cellSize + (boardSize - 1) * gap);
             ctx.stroke();
         } else if (type === 2) { // 우상단 -> 좌하단
-            ctx.strokeStyle = '#ff5733';
-            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#000'; // 검정색으로 변경
+            ctx.lineWidth = 1; // 선 굵기를 1px로 조정
             ctx.beginPath();
-            ctx.moveTo(boardSize * cellSize, 0);
-            ctx.lineTo(0, boardSize * cellSize);
+            ctx.moveTo(boardSize * cellSize + (boardSize - 1) * gap, 0);
+            ctx.lineTo(0, boardSize * cellSize + (boardSize - 1) * gap);
             ctx.stroke();
         }
     }
