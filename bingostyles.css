@@ -65,7 +65,7 @@ body {
     display: grid;
     gap: 5px; /* 셀 간의 간격을 5px로 설정 */
     justify-content: center;
-    margin-top: 20px;
+    /* margin-top: 20px;  Remove this */
     position: relative;
     z-index: 1;
     width: 100%;
