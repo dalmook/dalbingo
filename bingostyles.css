@@ -9,6 +9,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0; /* 기본 여백 제거 */
+    padding: 10px; /* 작은 여백 추가 */
+    box-sizing: border-box; /* 박스 크기 계산 방식 설정 */
 }
 
 /* 빙고 셀 스타일 */
@@ -50,6 +53,7 @@ body {
 .bingo-wrapper {
     position: relative;
     display: flex;
+    flex-direction: column; /* 세로 방향으로 정렬 */
     justify-content: center;
     align-items: center;
     width: 100%;
@@ -57,11 +61,19 @@ body {
     margin: 0 auto;
 }
 
+/* 설정 및 게임 화면 공통 스타일 */
+.screen {
+    width: 100%;
+    max-width: 500px; /* 최대 너비 설정 */
+    box-sizing: border-box;
+    padding: 20px;
+}
+
+/* 빙고 컨테이너 스타일 */
 #bingo-container {
     display: grid;
     gap: 5px; /* 셀 간의 간격을 5px로 설정 */
     justify-content: center;
-    /* margin-top: 20px;  Remove this */
     position: relative;
     z-index: 1;
     width: 100%;
@@ -72,31 +84,109 @@ body {
 #message {
     font-size: 1.25rem; /* 상대 단위 사용 */
     font-weight: bold;
+    margin-top: 15px;
+    text-align: center;
+}
+
+/* 버튼 스타일 */
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #ff5733;
+    color: #fff;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #e14e2b;
 }
 
 /* 반응형 디자인 */
-@media (max-width: 1200px) {
-    .bingo-cell {
-        font-size: 1.25rem;
+
+/* 데스크탑 및 큰 화면 */
+@media (min-width: 769px) {
+    .bingo-wrapper {
+        flex-direction: row; /* 가로 방향으로 변경 */
+        gap: 40px;
+    }
+
+    .screen {
+        max-width: 600px;
+    }
+
+    #bingo-container {
+        max-width: 600px;
     }
 }
 
-@media (max-width: 768px) {
+/* 모바일 세로 방향 */
+@media (max-width: 768px) and (orientation: portrait) {
+    .bingo-wrapper {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .screen {
+        max-width: 100%;
+        padding: 15px;
+    }
+
+    #bingo-container {
+        max-width: 100%;
+    }
+}
+
+/* 모바일 가로 방향 */
+@media (max-width: 768px) and (orientation: landscape) {
+    .bingo-wrapper {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .screen {
+        max-width: 100%;
+        padding: 10px;
+    }
+
+    #bingo-container {
+        max-width: 100%;
+    }
+
     .bingo-cell {
         font-size: 1.2rem;
     }
 
-    #bingo-container {
-        gap: 4px;
+    #message {
+        font-size: 1rem;
+    }
+
+    button {
+        font-size: 0.9rem;
+        padding: 8px 16px;
     }
 }
 
-@media (max-width: 576px) {
+/* 매우 작은 화면 */
+@media (max-width: 480px) {
     .bingo-cell {
         font-size: 1rem;
     }
 
-    #bingo-container {
-        gap: 3px;
+    #message {
+        font-size: 0.9rem;
+    }
+
+    button {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+
+    .screen {
+        padding: 10px;
     }
 }
