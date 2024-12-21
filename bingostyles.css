@@ -1,8 +1,8 @@
 /* bingostyles.css */
-
+@import url('https://fonts.googleapis.com/css2?family=Dongle:wght@300&family=Gamja+Flower&family=Gowun+Dodum&display=swap');
 /* 전체 스타일 */
 body {
-    font-family: 'Comic Sans MS', cursive, sans-serif;
+    font-family: "Gowun Dodum", sans-serif;
     background-color: #fffbf0;
     height: 100vh;
     display: flex;
@@ -38,19 +38,14 @@ body {
     color: #fff;
 }
 
-.bingo-cell.marked::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 3px dashed #fff;
-    box-sizing: border-box;
-    border-radius: 10px;
+/* 완성된 줄을 표시하기 위한 스타일 */
+.bingo-cell.completed {
+    background-color: #333;
+    color: #fff;
+    border-color: #000;
 }
 
-/* 빙고 래퍼와 캔버스 스타일 */
+/* 빙고 래퍼 스타일 */
 .bingo-wrapper {
     position: relative;
     display: flex;
@@ -72,6 +67,8 @@ body {
     max-width: 500px; /* 최대 너비 설정 */
 }
 
+/* 캔버스 관련 스타일 제거 */
+/*
 #bingo-lines {
     position: absolute;
     top: 0;
@@ -81,6 +78,7 @@ body {
     width: 100%;
     height: 100%;
 }
+*/
 
 /* 메시지 스타일 */
 #message {
