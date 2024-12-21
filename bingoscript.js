@@ -183,18 +183,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleCellClick(cell, index) {
-        if (markedCells.has(index)) return;
-
-        // 셀 마킹
-        cell.classList.add('marked');
-        markedCells.add(index);
-
-        // 줄 확인
-        checkForLines();
-
-        // 목표 줄수 달성 시 메시지 표시
-        if (linesCompleted >= targetLines) {
-            showMessage('축하합니다! 목표를 달성했습니다!');
+        if (markedCells.has(index)) {
+            // 이미 마킹된 셀을 다시 클릭하면 언마킹
+            cell.classList.remove('marked');
+            markedCells.delete(index);
+            // 관련된 완성된 줄이 있는지 확인하고 업데이트
+            updateLinesOnUnmark(index);
+        } else {
+            // 마킹되지 않은 셀을 클릭하면 마킹
+            cell.classList.add('marked');
+            markedCells.add(index);
+            // 줄 확인
+            checkForLines();
+            // 목표 줄수 달성 시 메시지 표시
+            if (linesCompleted >= targetLines) {
+                showMessage('축하합니다! 목표를 달성했습니다!');
+            }
         }
     }
 
@@ -236,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 대각선 체크
+        // 대각선 체크 (좌상-우하)
         let diag1 = gridArray.map((row, idx) => row[idx]);
         if (diag1.every(cell => cell)) {
             const lineKey = `diag1`;
@@ -247,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // 대각선 체크 (우상-좌하)
         let diag2 = gridArray.map((row, idx) => row[boardSize - idx - 1]);
         if (diag2.every(cell => cell)) {
             const lineKey = `diag2`;
@@ -265,8 +270,102 @@ document.addEventListener('DOMContentLoaded', () => {
             // 줄을 시각적으로 표시
             linesToMark.forEach(line => {
                 markLine(line);
+            });
+        }
+    }
+
+    function updateLinesOnUnmark(index) {
+        const grid = Array.from(bingoContainer.children);
+        const gridArray = [];
+        for (let i = 0; i < boardSize; i++) {
+            gridArray[i] = [];
+            for (let j = 0; j < boardSize; j++) {
+                gridArray[i][j] = grid[i * boardSize + j].classList.contains('marked');
             }
-            );
+        }
+
+        let linesToUnmark = [];
+
+        // 해당 셀이 속한 행
+        const rowIndex = Math.floor(index / boardSize);
+        const rowLineKey = `row-${rowIndex}`;
+        if (completedLineTypes.has(rowLineKey) && !gridArray[rowIndex].every(cell => cell)) {
+            linesToUnmark.push(rowLineKey);
+        }
+
+        // 해당 셀이 속한 열
+        const colIndex = index % boardSize;
+        const colLineKey = `col-${colIndex}`;
+        let column = gridArray.map(row => row[colIndex]);
+        if (completedLineTypes.has(colLineKey) && !column.every(cell => cell)) {
+            linesToUnmark.push(colLineKey);
+        }
+
+        // 해당 셀이 속한 대각선 (좌상-우하)
+        if (rowIndex === colIndex) {
+            const diag1LineKey = `diag1`;
+            let diag1 = gridArray.map((row, idx) => row[idx]);
+            if (completedLineTypes.has(diag1LineKey) && !diag1.every(cell => cell)) {
+                linesToUnmark.push(diag1LineKey);
+            }
+        }
+
+        // 해당 셀이 속한 대각선 (우상-좌하)
+        if (rowIndex + colIndex === boardSize - 1) {
+            const diag2LineKey = `diag2`;
+            let diag2 = gridArray.map((row, idx) => row[boardSize - idx - 1]);
+            if (completedLineTypes.has(diag2LineKey) && !diag2.every(cell => cell)) {
+                linesToUnmark.push(diag2LineKey);
+            }
+        }
+
+        // Remove 'completed' class and update counts for lines that are no longer complete
+        linesToUnmark.forEach(lineKey => {
+            removeCompletedLine(lineKey);
+        });
+    }
+
+    function removeCompletedLine(lineKey) {
+        const grid = Array.from(bingoContainer.children);
+        switch (lineKey.split('-')[0]) {
+            case 'row':
+                const rowIdx = parseInt(lineKey.split('-')[1]);
+                for (let col = 0; col < boardSize; col++) {
+                    const cellIndex = rowIdx * boardSize + col;
+                    grid[cellIndex].classList.remove('completed');
+                }
+                break;
+            case 'col':
+                const colIdx = parseInt(lineKey.split('-')[1]);
+                for (let row = 0; row < boardSize; row++) {
+                    const cellIndex = row * boardSize + colIdx;
+                    grid[cellIndex].classList.remove('completed');
+                }
+                break;
+            case 'diag1':
+                for (let i = 0; i < boardSize; i++) {
+                    const cellIndex = i * boardSize + i;
+                    grid[cellIndex].classList.remove('completed');
+                }
+                break;
+            case 'diag2':
+                for (let i = 0; i < boardSize; i++) {
+                    const cellIndex = i * boardSize + (boardSize - i - 1);
+                    grid[cellIndex].classList.remove('completed');
+                }
+                break;
+            default:
+                break;
+        }
+
+        // 줄 타입 제거 및 카운트 감소
+        completedLineTypes.delete(lineKey);
+        linesCompleted--;
+        completedLinesDisplay.textContent = linesCompleted;
+
+        // 목표 줄수 달성 메시지 숨기기 (필요 시)
+        if (linesCompleted < targetLines) {
+            messageDiv.classList.add('d-none');
         }
     }
 
