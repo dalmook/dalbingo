@@ -8,8 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageDiv = document.getElementById('message');
     const targetLinesDisplay = document.getElementById('target-lines-display');
     const completedLinesDisplay = document.getElementById('completed-lines-display');
-    const canvas = document.getElementById('bingo-lines');
-    const ctx = canvas.getContext('2d');
+    // 캔버스 관련 요소 제거
+    // const canvas = document.getElementById('bingo-lines');
+    // const ctx = canvas.getContext('2d');
     const firstButton = document.getElementById('first-button');
     const refreshButton = document.getElementById('refresh-button');
 
@@ -20,7 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let markedCells = new Set();
     let linesCompleted = 0;
     let completedLineTypes = new Set(); // To track which lines have been completed
-    let linesToDrawHistory = []; // 기록된 선을 저장
+    // 선 그리기 관련 변수 제거
+    // let linesToDrawHistory = []; // 기록된 선을 저장
 
     // 초기 설정 화면 표시
     showScreen('settings');
@@ -82,20 +84,27 @@ document.addEventListener('DOMContentLoaded', () => {
         linesCompleted = 0;
         completedLineTypes.clear();
         completedLinesDisplay.textContent = linesCompleted;
-        linesToDrawHistory = [];
+        // 선 그리기 관련 상태 초기화 제거
+        // linesToDrawHistory = [];
 
-        // 캔버스 초기화
+        // 캔버스 초기화 관련 코드 제거
+        /*
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        */
 
         // 숫자 생성 및 빙고판 생성
         generateBingoNumbers();
         createBingoGrid();
 
-        // 캔버스 크기 조정
+        // 캔버스 크기 조정 관련 코드 제거
+        /*
         adjustCanvasSize();
+        */
 
-        // 창 크기 변경 시 캔버스 다시 조정 및 선 다시 그리기
+        // 창 크기 변경 시 캔버스 다시 조정 및 선 다시 그리기 관련 이벤트 제거
+        /*
         window.addEventListener('resize', handleResize);
+        */
     }
 
     function resetGame() {
@@ -123,21 +132,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /*
     function adjustCanvasSize() {
-        // 빙고판의 실제 크기를 가져와 캔버스 크기 조정
-        const containerWidth = bingoContainer.clientWidth;
-        const containerHeight = bingoContainer.clientHeight;
-
-        canvas.width = containerWidth;
-        canvas.height = containerHeight;
-
-        // 선 다시 그리기
-        redrawLines();
+        // 캔버스 크기 조정 관련 코드 제거
     }
 
     function handleResize() {
-        adjustCanvasSize();
+        // 캔버스 리사이즈 관련 코드 제거
     }
+    */
 
     function handleCellClick(cell, index) {
         if (markedCells.has(index)) return;
@@ -166,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         let newLines = 0;
-        let linesToDraw = [];
+        let linesToMark = [];
 
         // 행 체크
         gridArray.forEach((row, rowIndex) => {
@@ -174,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const lineKey = `row-${rowIndex}`;
                 if (!completedLineTypes.has(lineKey)) {
                     newLines++;
-                    linesToDraw.push({ type: 'row', index: rowIndex });
+                    linesToMark.push({ type: 'row', index: rowIndex });
                     completedLineTypes.add(lineKey);
                 }
             }
@@ -187,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const lineKey = `col-${col}`;
                 if (!completedLineTypes.has(lineKey)) {
                     newLines++;
-                    linesToDraw.push({ type: 'col', index: col });
+                    linesToMark.push({ type: 'col', index: col });
                     completedLineTypes.add(lineKey);
                 }
             }
@@ -199,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const lineKey = `diag1`;
             if (!completedLineTypes.has(lineKey)) {
                 newLines++;
-                linesToDraw.push({ type: 'diag1' });
+                linesToMark.push({ type: 'diag1' });
                 completedLineTypes.add(lineKey);
             }
         }
@@ -209,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const lineKey = `diag2`;
             if (!completedLineTypes.has(lineKey)) {
                 newLines++;
-                linesToDraw.push({ type: 'diag2' });
+                linesToMark.push({ type: 'diag2' });
                 completedLineTypes.add(lineKey);
             }
         }
@@ -219,93 +222,42 @@ document.addEventListener('DOMContentLoaded', () => {
             linesCompleted += newLines;
             completedLinesDisplay.textContent = linesCompleted;
 
-            // 줄 그리기 및 기록
-            linesToDraw.forEach(line => {
-                drawLine(line);
-                linesToDrawHistory.push(line);
+            // 줄을 시각적으로 표시
+            linesToMark.forEach(line => {
+                markLine(line);
             });
         }
     }
 
-    function drawLine(line) {
-        // 선 그리기 로직을 배열로 저장
-        drawSingleLine(line);
-    }
-
-    function drawSingleLine(line) {
-        // 첫 번째 셀의 크기와 간격을 가져옵니다.
-        const firstCell = bingoContainer.querySelector('.bingo-cell');
-        if (!firstCell) return;
-
-        const cellSize = firstCell.clientWidth;
-        const gap = parseInt(getComputedStyle(bingoContainer).gap) || 0;
-
+    function markLine(line) {
+        const grid = Array.from(bingoContainer.children);
         switch (line.type) {
             case 'row':
-                drawHorizontalLine(line.index, cellSize, gap);
+                for (let col = 0; col < boardSize; col++) {
+                    const cellIndex = line.index * boardSize + col;
+                    grid[cellIndex].classList.add('completed');
+                }
                 break;
             case 'col':
-                drawVerticalLine(line.index, cellSize, gap);
+                for (let row = 0; row < boardSize; row++) {
+                    const cellIndex = row * boardSize + line.index;
+                    grid[cellIndex].classList.add('completed');
+                }
                 break;
             case 'diag1':
-                drawDiagonalLine(1, cellSize, gap);
+                for (let i = 0; i < boardSize; i++) {
+                    const cellIndex = i * boardSize + i;
+                    grid[cellIndex].classList.add('completed');
+                }
                 break;
             case 'diag2':
-                drawDiagonalLine(2, cellSize, gap);
+                for (let i = 0; i < boardSize; i++) {
+                    const cellIndex = i * boardSize + (boardSize - i - 1);
+                    grid[cellIndex].classList.add('completed');
+                }
                 break;
             default:
                 break;
-        }
-    }
-
-    function redrawLines() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        linesToDrawHistory.forEach(line => drawSingleLine(line));
-    }
-
-    function drawHorizontalLine(rowIndex, cellSize, gap) {
-        const startX = 0;
-        const startY = rowIndex * (cellSize + gap) + cellSize / 2;
-        const endX = boardSize * cellSize + (boardSize - 1) * gap;
-        const endY = startY;
-
-        ctx.strokeStyle = '#000'; // 검정색으로 변경
-        ctx.lineWidth = 1; // 선 굵기를 1px로 조정
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
-    }
-
-    function drawVerticalLine(colIndex, cellSize, gap) {
-        const startX = colIndex * (cellSize + gap) + cellSize / 2;
-        const startY = 0;
-        const endX = startX;
-        const endY = boardSize * cellSize + (boardSize - 1) * gap;
-
-        ctx.strokeStyle = '#000'; // 검정색으로 변경
-        ctx.lineWidth = 1; // 선 굵기를 1px로 조정
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
-    }
-
-    function drawDiagonalLine(type, cellSize, gap) {
-        if (type === 1) { // 좌상단 -> 우하단
-            ctx.strokeStyle = '#000'; // 검정색으로 변경
-            ctx.lineWidth = 1; // 선 굵기를 1px로 조정
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(boardSize * cellSize + (boardSize - 1) * gap, boardSize * cellSize + (boardSize - 1) * gap);
-            ctx.stroke();
-        } else if (type === 2) { // 우상단 -> 좌하단
-            ctx.strokeStyle = '#000'; // 검정색으로 변경
-            ctx.lineWidth = 1; // 선 굵기를 1px로 조정
-            ctx.beginPath();
-            ctx.moveTo(boardSize * cellSize + (boardSize - 1) * gap, 0);
-            ctx.lineTo(0, boardSize * cellSize + (boardSize - 1) * gap);
-            ctx.stroke();
         }
     }
 
