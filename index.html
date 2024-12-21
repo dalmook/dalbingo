@@ -25,7 +25,17 @@
             <button type="submit">게임 시작</button>
         </form>
 
-        <div id="bingo-container"></div>
+        <!-- 목표 줄수 및 현재 줄수 표시 -->
+        <div id="lines-status" class="hidden">
+            <p>목표 줄수: <span id="target-lines-display">1</span></p>
+            <p>완성된 줄수: <span id="completed-lines-display">0</span></p>
+        </div>
+
+        <!-- 빙고판과 캔버스 -->
+        <div class="bingo-wrapper">
+            <div id="bingo-container"></div>
+            <canvas id="bingo-lines"></canvas>
+        </div>
 
         <div id="message" class="hidden"></div>
     </div>
