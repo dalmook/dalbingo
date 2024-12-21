@@ -4,42 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>빙고 게임</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="bingostyles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>빙고 게임</h1>
-        <form id="settings-form">
-            <div class="form-group">
-                <label for="board-size">빙고판 크기 (예: 5 for 5x5):</label>
-                <input type="number" id="board-size" name="boardSize" min="3" max="10" value="5" required>
-            </div>
-            <div class="form-group">
-                <label for="number-range">숫자 범위 (최대 숫자):</label>
-                <input type="number" id="number-range" name="numberRange" min="10" max="100" value="75" required>
-            </div>
-            <div class="form-group">
-                <label for="target-lines">목표 줄수:</label>
-                <input type="number" id="target-lines" name="targetLines" min="1" value="1" required>
-            </div>
-            <button type="submit">게임 시작</button>
-        </form>
-
-        <!-- 목표 줄수 및 현재 줄수 표시 -->
-        <div id="lines-status" class="hidden">
-            <p>목표 줄수: <span id="target-lines-display">1</span></p>
-            <p>완성된 줄수: <span id="completed-lines-display">0</span></p>
+    <div class="container my-5">
+        <!-- 설정 화면 -->
+        <div id="settings-screen">
+            <h1 class="text-center mb-4">빙고 게임 설정</h1>
+            <form id="settings-form" class="mx-auto" style="max-width: 400px;">
+                <div class="mb-3">
+                    <label for="board-size" class="form-label">빙고판 크기 (예: 5 for 5x5)</label>
+                    <input type="number" class="form-control" id="board-size" name="boardSize" min="3" max="10" value="5" required>
+                </div>
+                <div class="mb-3">
+                    <label for="number-range" class="form-label">숫자 범위 (최대 숫자)</label>
+                    <input type="number" class="form-control" id="number-range" name="numberRange" min="10" max="100" value="75" required>
+                </div>
+                <div class="mb-3">
+                    <label for="target-lines" class="form-label">목표 줄수</label>
+                    <input type="number" class="form-control" id="target-lines" name="targetLines" min="1" value="1" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">게임 시작</button>
+            </form>
         </div>
 
-        <!-- 빙고판과 캔버스 -->
-        <div class="bingo-wrapper">
-            <div id="bingo-container"></div>
-            <canvas id="bingo-lines"></canvas>
+        <!-- 게임 화면 -->
+        <div id="game-screen" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <p>목표 줄수: <span id="target-lines-display">1</span></p>
+                    <p>완성된 줄수: <span id="completed-lines-display">0</span></p>
+                </div>
+                <div>
+                    <button id="first-button" class="btn btn-secondary me-2">처음으로</button>
+                    <button id="refresh-button" class="btn btn-success">새로고침</button>
+                </div>
+            </div>
+            <div class="bingo-wrapper">
+                <div id="bingo-container" class="mx-auto"></div>
+                <canvas id="bingo-lines"></canvas>
+            </div>
+            <div id="message" class="alert alert-success text-center mt-4 d-none"></div>
         </div>
-
-        <div id="message" class="hidden"></div>
     </div>
 
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="bingoscript.js"></script>
 </body>
 </html>
