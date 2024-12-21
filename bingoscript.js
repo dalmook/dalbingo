@@ -67,20 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         bingoNumbers.forEach((num, index) => {
             const cell = document.createElement('div');
             cell.classList.add('bingo-cell');
-
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.min = 1;
-            input.max = numberRange;
-            input.value = num;
-            input.required = true;
-
-            // Prevent duplicate numbers
-            input.addEventListener('input', () => {
-                validateUniqueNumbers();
-            });
-
-            cell.appendChild(input);
+            cell.textContent = num;
             cell.dataset.index = index;
             cell.addEventListener('click', () => handleCellClick(cell, index));
             bingoContainer.appendChild(cell);
@@ -96,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleCellClick(cell, index) {
-        const input = cell.querySelector('input');
         if (markedCells.has(index)) return;
 
         // Mark the cell
@@ -181,7 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function drawLine(line) {
         const cellSize = 60; // As defined in CSS
-        const padding = 5; // Gap between cells
 
         switch (line.type) {
             case 'row':
@@ -260,29 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
-        }
-    }
-
-    // Validate that all numbers are unique
-    function validateUniqueNumbers() {
-        const inputs = bingoContainer.querySelectorAll('input');
-        const numbers = Array.from(inputs).map(input => parseInt(input.value)).filter(num => !isNaN(num));
-        const uniqueNumbers = new Set(numbers);
-
-        if (numbers.length !== uniqueNumbers.size) {
-            // Highlight duplicate inputs
-            inputs.forEach(input => {
-                if (numbers.filter(num => num === parseInt(input.value)).length > 1) {
-                    input.style.border = '2px solid red';
-                } else {
-                    input.style.border = '';
-                }
-            });
-        } else {
-            // Remove all borders if no duplicates
-            inputs.forEach(input => {
-                input.style.border = '';
-            });
         }
     }
 });
