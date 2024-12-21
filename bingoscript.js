@@ -2,13 +2,16 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('settings-form');
+    const settingsScreen = document.getElementById('settings-screen');
+    const gameScreen = document.getElementById('game-screen');
     const bingoContainer = document.getElementById('bingo-container');
     const messageDiv = document.getElementById('message');
-    const linesStatus = document.getElementById('lines-status');
     const targetLinesDisplay = document.getElementById('target-lines-display');
     const completedLinesDisplay = document.getElementById('completed-lines-display');
     const canvas = document.getElementById('bingo-lines');
     const ctx = canvas.getContext('2d');
+    const firstButton = document.getElementById('first-button');
+    const refreshButton = document.getElementById('refresh-button');
 
     let boardSize = 5;
     let numberRange = 75;
@@ -18,41 +21,81 @@ document.addEventListener('DOMContentLoaded', () => {
     let linesCompleted = 0;
     let completedLineTypes = new Set(); // To track which lines have been completed
 
+    // 초기 설정 화면 표시
+    showScreen('settings');
+
+    // 폼 제출 이벤트 리스너
     form.addEventListener('submit', (e) => {
         e.preventDefault();
-        // Reset previous game state
-        bingoContainer.innerHTML = '';
-        messageDiv.classList.add('hidden');
-        linesStatus.classList.add('hidden');
-        markedCells.clear();
-        linesCompleted = 0;
-        completedLineTypes.clear();
-        completedLinesDisplay.textContent = linesCompleted;
-        targetLinesDisplay.textContent = targetLines;
+        startGame();
+    });
 
-        // Reset canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // "처음으로" 버튼 이벤트 리스너
+    firstButton.addEventListener('click', () => {
+        showScreen('settings');
+    });
 
-        // Get user inputs
+    // "새로고침" 버튼 이벤트 리스너
+    refreshButton.addEventListener('click', () => {
+        resetGame();
+    });
+
+    function showScreen(screen) {
+        if (screen === 'settings') {
+            settingsScreen.classList.remove('d-none');
+            gameScreen.classList.add('d-none');
+        } else if (screen === 'game') {
+            settingsScreen.classList.add('d-none');
+            gameScreen.classList.remove('d-none');
+        }
+    }
+
+    function startGame() {
+        // 설정 화면의 값을 가져오기
         boardSize = parseInt(document.getElementById('board-size').value);
         numberRange = parseInt(document.getElementById('number-range').value);
         targetLines = parseInt(document.getElementById('target-lines').value);
 
-        // Validate inputs
+        // 유효성 검사
         if (boardSize * boardSize > numberRange) {
             alert('빙고판의 셀 수가 숫자 범위보다 클 수 없습니다.');
             return;
         }
 
-        // Generate bingo numbers
-        generateBingoNumbers();
+        // 목표 줄수 및 완료된 줄수 표시 업데이트
+        targetLinesDisplay.textContent = targetLines;
+        completedLinesDisplay.textContent = linesCompleted;
 
-        // Create bingo grid
+        // 게임 화면 표시
+        showScreen('game');
+
+        // 게임 초기화
+        initializeGame();
+    }
+
+    function initializeGame() {
+        // 이전 게임 상태 초기화
+        bingoContainer.innerHTML = '';
+        messageDiv.classList.add('d-none');
+        markedCells.clear();
+        linesCompleted = 0;
+        completedLineTypes.clear();
+        completedLinesDisplay.textContent = linesCompleted;
+
+        // 캔버스 초기화
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 숫자 생성 및 빙고판 생성
+        generateBingoNumbers();
         createBingoGrid();
 
-        // Display lines status
-        linesStatus.classList.remove('hidden');
-    });
+        // 캔버스 크기 조정
+        adjustCanvasSize();
+    }
+
+    function resetGame() {
+        initializeGame();
+    }
 
     function generateBingoNumbers() {
         const numbers = Array.from({ length: numberRange }, (_, i) => i + 1);
@@ -61,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createBingoGrid() {
+        // 빙고판 그리드 설정
         bingoContainer.style.gridTemplateColumns = `repeat(${boardSize}, 60px)`;
         bingoContainer.style.gridTemplateRows = `repeat(${boardSize}, 60px)`;
 
@@ -72,25 +116,32 @@ document.addEventListener('DOMContentLoaded', () => {
             cell.addEventListener('click', () => handleCellClick(cell, index));
             bingoContainer.appendChild(cell);
         });
+    }
 
-        // Resize canvas to match bingo grid
-        setTimeout(() => { // Delay to ensure grid is rendered
-            canvas.width = bingoContainer.clientWidth;
-            canvas.height = bingoContainer.clientHeight;
-            canvas.style.width = `${bingoContainer.clientWidth}px`;
-            canvas.style.height = `${bingoContainer.clientHeight}px`;
-        }, 100);
+    function adjustCanvasSize() {
+        // 빙고판의 실제 크기를 가져와 캔버스 크기 조정
+        const containerWidth = bingoContainer.clientWidth;
+        const containerHeight = bingoContainer.clientHeight;
+
+        canvas.width = containerWidth;
+        canvas.height = containerHeight;
+
+        // 캔버스 CSS 크기도 동일하게 설정
+        canvas.style.width = `${containerWidth}px`;
+        canvas.style.height = `${containerHeight}px`;
     }
 
     function handleCellClick(cell, index) {
         if (markedCells.has(index)) return;
 
-        // Mark the cell
+        // 셀 마킹
         cell.classList.add('marked');
         markedCells.add(index);
 
+        // 줄 확인
         checkForLines();
 
+        // 목표 줄수 달성 시 메시지 표시
         if (linesCompleted >= targetLines) {
             showMessage('축하합니다! 목표를 달성했습니다!');
         }
@@ -109,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let newLines = 0;
         let linesToDraw = [];
 
-        // Check rows
+        // 행 체크
         gridArray.forEach((row, rowIndex) => {
             if (row.every(cell => cell)) {
                 const lineKey = `row-${rowIndex}`;
@@ -121,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Check columns
+        // 열 체크
         for (let col = 0; col < boardSize; col++) {
             let column = gridArray.map(row => row[col]);
             if (column.every(cell => cell)) {
@@ -134,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Check diagonals
+        // 대각선 체크
         let diag1 = gridArray.map((row, idx) => row[idx]);
         if (diag1.every(cell => cell)) {
             const lineKey = `diag1`;
@@ -155,18 +206,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Update lines completed
+        // 줄 업데이트
         if (newLines > 0) {
             linesCompleted += newLines;
             completedLinesDisplay.textContent = linesCompleted;
 
-            // Draw lines
+            // 줄 그리기
             linesToDraw.forEach(line => drawLine(line));
         }
     }
 
     function drawLine(line) {
-        const cellSize = 60; // As defined in CSS
+        const cellSize = 60; // CSS에서 정의한 셀 크기
 
         switch (line.type) {
             case 'row':
@@ -193,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const endX = boardSize * cellSize;
         const endY = startY;
 
-        ctx.strokeStyle = 'red';
+        ctx.strokeStyle = '#ff5733'; // 활기찬 색상
         ctx.lineWidth = 4;
         ctx.beginPath();
         ctx.moveTo(startX, startY);
@@ -208,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const endX = startX;
         const endY = boardSize * cellSize;
 
-        ctx.strokeStyle = 'red';
+        ctx.strokeStyle = '#ff5733';
         ctx.lineWidth = 4;
         ctx.beginPath();
         ctx.moveTo(startX, startY);
@@ -218,15 +269,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function drawDiagonalLine(type) {
         const cellSize = 60;
-        if (type === 1) { // Top-left to bottom-right
-            ctx.strokeStyle = 'red';
+        if (type === 1) { // 좌상단 -> 우하단
+            ctx.strokeStyle = '#ff5733';
             ctx.lineWidth = 4;
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.lineTo(boardSize * cellSize, boardSize * cellSize);
             ctx.stroke();
-        } else if (type === 2) { // Top-right to bottom-left
-            ctx.strokeStyle = 'red';
+        } else if (type === 2) { // 우상단 -> 좌하단
+            ctx.strokeStyle = '#ff5733';
             ctx.lineWidth = 4;
             ctx.beginPath();
             ctx.moveTo(boardSize * cellSize, 0);
@@ -237,10 +288,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showMessage(text) {
         messageDiv.textContent = text;
-        messageDiv.classList.remove('hidden');
+        messageDiv.classList.remove('d-none');
     }
 
-    // Utility function to shuffle an array
+    // 배열 섞기 함수 (Fisher-Yates 알고리즘)
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
