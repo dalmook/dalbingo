@@ -20,11 +20,13 @@
                 </div>
                 <div class="mb-3">
                     <label for="number-range" class="form-label">숫자 범위 (최대 숫자)</label>
-                    <input type="number" class="form-control" id="number-range" name="numberRange" min="10" max="100" value="75" required>
+                    <input type="number" class="form-control" id="number-range" name="numberRange" min="25" max="100" value="25" required>
+                    <small class="form-text text-muted">숫자 범위는 빙고판 크기^2 이상, 최대 100입니다.</small>
                 </div>
                 <div class="mb-3">
                     <label for="target-lines" class="form-label">목표 줄수</label>
-                    <input type="number" class="form-control" id="target-lines" name="targetLines" min="1" value="1" required>
+                    <input type="number" class="form-control" id="target-lines" name="targetLines" min="1" value="3" required>
+                    <small class="form-text text-muted">목표 줄수의 최대값은 빙고판 크기에 따라 다릅니다.</small>
                 </div>
                 <button type="submit" class="btn btn-primary w-100">게임 시작</button>
             </form>
@@ -38,7 +40,7 @@
             </div>
             <div class="d-flex justify-content-center mb-3">
                 <div class="text-center">
-                    <p>목표 줄수: <span id="target-lines-display">1</span></p>
+                    <p>목표 줄수: <span id="target-lines-display">3</span></p>
                     <p>완성된 줄수: <span id="completed-lines-display">0</span></p>
                 </div>
             </div>
