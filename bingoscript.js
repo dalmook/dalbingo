@@ -8,24 +8,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageDiv = document.getElementById('message');
     const targetLinesDisplay = document.getElementById('target-lines-display');
     const completedLinesDisplay = document.getElementById('completed-lines-display');
-    // 캔버스 관련 요소 제거
-    // const canvas = document.getElementById('bingo-lines');
-    // const ctx = canvas.getContext('2d');
     const firstButton = document.getElementById('first-button');
     const refreshButton = document.getElementById('refresh-button');
+    const boardSizeInput = document.getElementById('board-size');
+    const numberRangeInput = document.getElementById('number-range');
+    const targetLinesInput = document.getElementById('target-lines');
 
-    let boardSize = 5;
-    let numberRange = 75;
-    let targetLines = 1;
+    // 기본 설정 값
+    const DEFAULT_BOARD_SIZE = 5;
+    const DEFAULT_NUMBER_RANGE = 25;
+    const DEFAULT_TARGET_LINES = 3;
+
+    let boardSize = DEFAULT_BOARD_SIZE;
+    let numberRange = DEFAULT_NUMBER_RANGE;
+    let targetLines = DEFAULT_TARGET_LINES;
     let bingoNumbers = [];
     let markedCells = new Set();
     let linesCompleted = 0;
-    let completedLineTypes = new Set(); // To track which lines have been completed
-    // 선 그리기 관련 변수 제거
-    // let linesToDrawHistory = []; // 기록된 선을 저장
+    let completedLineTypes = new Set(); // 줄의 완성 여부를 추적
 
     // 초기 설정 화면 표시
     showScreen('settings');
+
+    // 초기 설정 화면의 입력 필드 초기화
+    initializeSettingsFields();
 
     // 폼 제출 이벤트 리스너
     form.addEventListener('submit', (e) => {
@@ -35,12 +41,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // "처음으로" 버튼 이벤트 리스너
     firstButton.addEventListener('click', () => {
+        resetToDefaultSettings();
         showScreen('settings');
     });
 
     // "새로고침" 버튼 이벤트 리스너
     refreshButton.addEventListener('click', () => {
-        resetGame();
+        initializeGame();
+    });
+
+    // 빙고판 크기 변경 시 숫자 범위 자동 조정 및 목표 줄수 최대값 설정
+    boardSizeInput.addEventListener('input', () => {
+        const newBoardSize = parseInt(boardSizeInput.value);
+        if (isNaN(newBoardSize) || newBoardSize < 3) {
+            numberRangeInput.min = 9; // 최소 숫자 범위 (3x3 빙고판)
+            numberRangeInput.value = 9;
+        } else {
+            const newMin = newBoardSize * newBoardSize;
+            numberRangeInput.min = newMin;
+            numberRangeInput.value = Math.max(parseInt(numberRangeInput.value), newMin);
+        }
+
+        // 목표 줄수 최대값 설정 (2 * boardSize + 2)
+        const newMaxTargetLines = 2 * newBoardSize + 2;
+        targetLinesInput.max = newMaxTargetLines;
+        // 현재 목표 줄수가 새로운 최대값을 초과하면 조정
+        if (parseInt(targetLinesInput.value) > newMaxTargetLines) {
+            targetLinesInput.value = newMaxTargetLines;
+        }
+    });
+
+    // 목표 줄수 입력 실시간 제한
+    targetLinesInput.addEventListener('input', () => {
+        const currentValue = parseInt(targetLinesInput.value);
+        const maxTargetLines = parseInt(targetLinesInput.max);
+        if (currentValue > maxTargetLines) {
+            targetLinesInput.value = maxTargetLines;
+        }
     });
 
     function showScreen(screen) {
@@ -53,16 +90,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function initializeSettingsFields() {
+        // 기본값 설정
+        boardSizeInput.value = DEFAULT_BOARD_SIZE;
+        numberRangeInput.value = DEFAULT_NUMBER_RANGE;
+        targetLinesInput.value = DEFAULT_TARGET_LINES;
+
+        // 숫자 범위 최소값과 목표 줄수 최대값 설정
+        numberRangeInput.min = DEFAULT_BOARD_SIZE * DEFAULT_BOARD_SIZE; // 5x5 빙고판일 경우 25
+        numberRangeInput.max = 100;
+
+        const maxTargetLines = 2 * DEFAULT_BOARD_SIZE + 2; // 12
+        targetLinesInput.max = maxTargetLines;
+    }
+
+    function resetToDefaultSettings() {
+        boardSize = DEFAULT_BOARD_SIZE;
+        numberRange = DEFAULT_NUMBER_RANGE;
+        targetLines = DEFAULT_TARGET_LINES;
+
+        initializeSettingsFields();
+    }
+
     function startGame() {
         // 설정 화면의 값을 가져오기
-        boardSize = parseInt(document.getElementById('board-size').value);
-        numberRange = parseInt(document.getElementById('number-range').value);
-        targetLines = parseInt(document.getElementById('target-lines').value);
+        boardSize = parseInt(boardSizeInput.value);
+        numberRange = parseInt(numberRangeInput.value);
+        targetLines = parseInt(targetLinesInput.value);
 
         // 유효성 검사
         if (boardSize * boardSize > numberRange) {
             alert('빙고판의 셀 수가 숫자 범위보다 클 수 없습니다.');
             return;
+        }
+
+        // 목표 줄수의 최대값 계산
+        const maxTargetLines = 2 * boardSize + 2;
+        if (targetLines > maxTargetLines) {
+            alert(`목표 줄수는 최대 ${maxTargetLines}까지 설정할 수 있습니다.`);
+            targetLinesInput.value = maxTargetLines;
+            targetLines = maxTargetLines;
         }
 
         // 목표 줄수 및 완료된 줄수 표시 업데이트
@@ -84,27 +151,10 @@ document.addEventListener('DOMContentLoaded', () => {
         linesCompleted = 0;
         completedLineTypes.clear();
         completedLinesDisplay.textContent = linesCompleted;
-        // 선 그리기 관련 상태 초기화 제거
-        // linesToDrawHistory = [];
-
-        // 캔버스 초기화 관련 코드 제거
-        /*
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        */
 
         // 숫자 생성 및 빙고판 생성
         generateBingoNumbers();
         createBingoGrid();
-
-        // 캔버스 크기 조정 관련 코드 제거
-        /*
-        adjustCanvasSize();
-        */
-
-        // 창 크기 변경 시 캔버스 다시 조정 및 선 다시 그리기 관련 이벤트 제거
-        /*
-        window.addEventListener('resize', handleResize);
-        */
     }
 
     function resetGame() {
@@ -131,16 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
             bingoContainer.appendChild(cell);
         });
     }
-
-    /*
-    function adjustCanvasSize() {
-        // 캔버스 크기 조정 관련 코드 제거
-    }
-
-    function handleResize() {
-        // 캔버스 리사이즈 관련 코드 제거
-    }
-    */
 
     function handleCellClick(cell, index) {
         if (markedCells.has(index)) return;
@@ -225,7 +265,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // 줄을 시각적으로 표시
             linesToMark.forEach(line => {
                 markLine(line);
-            });
+            }
+            );
         }
     }
 
