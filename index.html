@@ -1,70 +1,74 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PDLDEKP0BB"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9168248935486215"
-     crossorigin="anonymous"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-PDLDEKP0BB');
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>빙고 게임</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="bingostyles.css">
-</head>
+    <head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-PDLDEKP0BB"></script>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9168248935486215"
+         crossorigin="anonymous"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());    
+          gtag('config', 'G-PDLDEKP0BB');
+        </script>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <title>빙고 게임</title>
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="bingostyles.css">
+    </head>
 <body>
-    <div class="container my-5">
+    <div class="bingo-wrapper">
         <!-- 설정 화면 -->
-        <div id="settings-screen">
-            <h1 class="text-center mb-4">빙고 게임 설정</h1>
-            <form id="settings-form" class="mx-auto" style="max-width: 400px;">
+        <div id="settings-screen" class="screen">
+            <h2>빙고 설정</h2>
+            <form id="settings-form">
+                <!-- 카테고리 선택 -->
                 <div class="mb-3">
-                    <label for="board-size" class="form-label">빙고판 크기 (예: 5 for 5x5)</label>
-                    <input type="number" class="form-control" id="board-size" name="boardSize" min="3" max="10" value="5" required>
+                    <label for="category" class="form-label">카테고리 선택:</label>
+                    <select id="category" class="form-select" required>
+                        <option value="" disabled selected>카테고리를 선택하세요</option>
+                        <!-- 카테고리 옵션은 JavaScript로 동적으로 추가 -->
+                    </select>
                 </div>
+                
+                <!-- 빙고판 크기 선택 -->
                 <div class="mb-3">
-                    <label for="number-range" class="form-label">숫자 범위 (최대 숫자)</label>
-                    <input type="number" class="form-control" id="number-range" name="numberRange" min="25" max="100" value="25" required>
-                    <small class="form-text text-muted">숫자 범위는 빙고판 크기^2 이상, 최대 100입니다.</small>
+                    <label for="board-size" class="form-label">빙고판 크기:</label>
+                    <input type="number" id="board-size" class="form-control" min="3" max="10" value="5" required>
                 </div>
+                
+                <!-- 숫자 범위 선택 -->
                 <div class="mb-3">
-                    <label for="target-lines" class="form-label">목표 줄수</label>
-                    <input type="number" class="form-control" id="target-lines" name="targetLines" min="1" value="3" required>
-                    <small class="form-text text-muted">목표 줄수의 최대값은 빙고판 크기에 따라 다릅니다.</small>
+                    <label for="number-range" class="form-label">숫자 범위:</label>
+                    <input type="number" id="number-range" class="form-control" min="9" max="100" value="25" required>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">게임 시작</button>
+                
+                <!-- 목표 줄수 선택 -->
+                <div class="mb-3">
+                    <label for="target-lines" class="form-label">목표 줄수:</label>
+                    <input type="number" id="target-lines" class="form-control" min="1" max="12" value="3" required>
+                </div>
+                
+                <!-- 게임 시작 버튼 -->
+                <button type="submit" class="btn btn-primary">게임 시작</button>
             </form>
         </div>
-
+        
         <!-- 게임 화면 -->
-        <div id="game-screen" class="d-none">
-            <div class="d-flex justify-content-center mb-3">
-                <button id="first-button" class="btn btn-secondary me-2">처음으로</button>
-                <button id="refresh-button" class="btn btn-success">새로고침</button>
+        <div id="game-screen" class="screen d-none">
+            <h2>빙고 게임</h2>
+            <div id="bingo-container" class="bingo-container"></div>
+            <div id="message" class="d-none"></div>
+            <div class="controls">
+                <span>목표 줄수: <span id="target-lines-display">3</span></span>
+                <span>완성된 줄수: <span id="completed-lines-display">0</span></span>
+                <button id="refresh-button" class="btn btn-secondary">새로고침</button>
+                <button id="first-button" class="btn btn-secondary">처음으로</button>
             </div>
-            <div class="d-flex justify-content-center mb-3">
-                <div class="text-center">
-                    <p>목표 줄수: <span id="target-lines-display">3</span></p>
-                    <p>완성된 줄수: <span id="completed-lines-display">0</span></p>
-                </div>
-            </div>
-            <div class="bingo-wrapper d-flex justify-content-center align-items-center">
-                <div id="bingo-container"></div>
-                <!-- 캔버스 요소 제거 -->
-                <!-- <canvas id="bingo-lines"></canvas> -->
-            </div>
-            <div id="message" class="alert alert-success text-center mt-4 d-none"></div>
         </div>
     </div>
-
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script src="bingoscript.js"></script>
 </body>
 </html>

@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const boardSizeInput = document.getElementById('board-size');
     const numberRangeInput = document.getElementById('number-range');
     const targetLinesInput = document.getElementById('target-lines');
+    const categorySelect = document.getElementById('category');
 
     // 기본 설정 값
     const DEFAULT_BOARD_SIZE = 5;
@@ -22,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let boardSize = DEFAULT_BOARD_SIZE;
     let numberRange = DEFAULT_NUMBER_RANGE;
     let targetLines = DEFAULT_TARGET_LINES;
-    let bingoNumbers = [];
+    let selectedCategory = null;
+    let bingoData = [];
     let markedCells = new Set();
     let linesCompleted = 0;
     let completedLineTypes = new Set(); // 줄의 완성 여부를 추적
@@ -32,6 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 초기 설정 화면의 입력 필드 초기화
     initializeSettingsFields();
+
+    // 카테고리 로드
+    loadCategories();
 
     // 폼 제출 이벤트 리스너
     form.addEventListener('submit', (e) => {
@@ -68,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 현재 목표 줄수가 새로운 최대값을 초과하면 조정
         if (parseInt(targetLinesInput.value) > newMaxTargetLines) {
             targetLinesInput.value = newMaxTargetLines;
+            targetLines = newMaxTargetLines;
         }
     });
 
@@ -77,8 +83,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxTargetLines = parseInt(targetLinesInput.max);
         if (currentValue > maxTargetLines) {
             targetLinesInput.value = maxTargetLines;
+            targetLines = maxTargetLines;
         }
     });
+
+    // 함수: 카테고리 로드
+    function loadCategories() {
+        fetch('bingodata.json')
+            .then(response => response.json())
+            .then(data => {
+                const categories = data.categories;
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.name;
+                    option.textContent = category.name;
+                    categorySelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading categories:', error);
+                alert('카테고리 데이터를 로드하는 데 실패했습니다.');
+            });
+    }
 
     function showScreen(screen) {
         if (screen === 'settings') {
@@ -108,17 +134,25 @@ document.addEventListener('DOMContentLoaded', () => {
         boardSize = DEFAULT_BOARD_SIZE;
         numberRange = DEFAULT_NUMBER_RANGE;
         targetLines = DEFAULT_TARGET_LINES;
+        selectedCategory = null;
+        categorySelect.value = "";
 
         initializeSettingsFields();
     }
 
     function startGame() {
         // 설정 화면의 값을 가져오기
+        selectedCategory = categorySelect.value;
         boardSize = parseInt(boardSizeInput.value);
         numberRange = parseInt(numberRangeInput.value);
         targetLines = parseInt(targetLinesInput.value);
 
         // 유효성 검사
+        if (!selectedCategory) {
+            alert('카테고리를 선택하세요.');
+            return;
+        }
+
         if (boardSize * boardSize > numberRange) {
             alert('빙고판의 셀 수가 숫자 범위보다 클 수 없습니다.');
             return;
@@ -132,15 +166,36 @@ document.addEventListener('DOMContentLoaded', () => {
             targetLines = maxTargetLines;
         }
 
-        // 목표 줄수 및 완료된 줄수 표시 업데이트
-        targetLinesDisplay.textContent = targetLines;
-        completedLinesDisplay.textContent = linesCompleted;
+        // 빙고 데이터 로드
+        loadBingoData(selectedCategory)
+            .then(() => {
+                // 목표 줄수 및 완료된 줄수 표시 업데이트
+                targetLinesDisplay.textContent = targetLines;
+                completedLinesDisplay.textContent = linesCompleted;
 
-        // 게임 화면 표시
-        showScreen('game');
+                // 게임 화면 표시
+                showScreen('game');
 
-        // 게임 초기화
-        initializeGame();
+                // 게임 초기화
+                initializeGame();
+            })
+            .catch(error => {
+                console.error('Error loading bingo data:', error);
+                alert('빙고 데이터를 로드하는 데 실패했습니다.');
+            });
+    }
+
+    function loadBingoData(categoryName) {
+        return fetch('bingodata.json')
+            .then(response => response.json())
+            .then(data => {
+                const categories = data.categories;
+                const category = categories.find(cat => cat.name === categoryName);
+                if (!category) {
+                    throw new Error(`카테고리 "${categoryName}"를 찾을 수 없습니다.`);
+                }
+                bingoData = category.data;
+            });
     }
 
     function initializeGame() {
@@ -152,19 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
         completedLineTypes.clear();
         completedLinesDisplay.textContent = linesCompleted;
 
-        // 숫자 생성 및 빙고판 생성
-        generateBingoNumbers();
+        // 빙고판 생성
         createBingoGrid();
-    }
-
-    function resetGame() {
-        initializeGame();
-    }
-
-    function generateBingoNumbers() {
-        const numbers = Array.from({ length: numberRange }, (_, i) => i + 1);
-        shuffleArray(numbers);
-        bingoNumbers = numbers.slice(0, boardSize * boardSize);
     }
 
     function createBingoGrid() {
@@ -172,10 +216,14 @@ document.addEventListener('DOMContentLoaded', () => {
         bingoContainer.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
         bingoContainer.style.gridTemplateRows = `repeat(${boardSize}, 1fr)`;
 
-        bingoNumbers.forEach((num, index) => {
+        // 빙고 데이터에서 무작위로 선택
+        const shuffledData = shuffleArray([...bingoData]);
+        const selectedBingoNumbers = shuffledData.slice(0, boardSize * boardSize);
+
+        selectedBingoNumbers.forEach((item, index) => {
             const cell = document.createElement('div');
             cell.classList.add('bingo-cell');
-            cell.textContent = num;
+            cell.textContent = item.value;
             cell.dataset.index = index;
             cell.addEventListener('click', () => handleCellClick(cell, index));
             bingoContainer.appendChild(cell);
@@ -291,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const rowLineKey = `row-${rowIndex}`;
         if (completedLineTypes.has(rowLineKey) && !gridArray[rowIndex].every(cell => cell)) {
             linesToUnmark.push(rowLineKey);
+            console.log(`Unmarking line: ${rowLineKey}`);
         }
 
         // 해당 셀이 속한 열
@@ -299,6 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let column = gridArray.map(row => row[colIndex]);
         if (completedLineTypes.has(colLineKey) && !column.every(cell => cell)) {
             linesToUnmark.push(colLineKey);
+            console.log(`Unmarking line: ${colLineKey}`);
         }
 
         // 해당 셀이 속한 대각선 (좌상-우하)
@@ -307,6 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let diag1 = gridArray.map((row, idx) => row[idx]);
             if (completedLineTypes.has(diag1LineKey) && !diag1.every(cell => cell)) {
                 linesToUnmark.push(diag1LineKey);
+                console.log(`Unmarking line: ${diag1LineKey}`);
             }
         }
 
@@ -316,6 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let diag2 = gridArray.map((row, idx) => row[boardSize - idx - 1]);
             if (completedLineTypes.has(diag2LineKey) && !diag2.every(cell => cell)) {
                 linesToUnmark.push(diag2LineKey);
+                console.log(`Unmarking line: ${diag2LineKey}`);
             }
         }
 
@@ -412,5 +464,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
         }
+        return array;
     }
 });
