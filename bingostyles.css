@@ -1,8 +1,8 @@
 /* bingostyles.css */
-@import url('https://fonts.googleapis.com/css2?family=Dongle:wght@300&family=Gamja+Flower&family=Gowun+Dodum&display=swap');
+
 /* 전체 스타일 */
 body {
-    font-family: "Gowun Dodum", sans-serif;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
     background-color: #fffbf0;
     height: 100vh;
     display: flex;
