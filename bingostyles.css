@@ -246,7 +246,7 @@ body {
 @media (max-width: 600px) {
     .adsense-container {
         max-width: 100%; /* 모바일에서는 전체 너비 사용 */
-        max-height: 150px; /* 모바일에서의 최대 높이 설정 */
+        max-height: 90px; /* 모바일에서의 최대 높이 설정 */
         overflow-y: scroll; /* 세로 스크롤 추가 */
     }
 }
@@ -308,9 +308,6 @@ body {
 
     .screen {
         padding: 10px;
-    }
-    .adsense-container {
-        max-height: 120px; /* 매우 작은 화면에서는 더 낮은 최대 높이 설정 */
     }
     .form-select,
     .form-control {
