@@ -29,6 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let linesCompleted = 0;
     let completedLineTypes = new Set(); // 줄의 완성 여부를 추적
 
+    // **추가된 부분: 현재 사용 중인 usableData를 저장하는 변수**
+    let currentUsableData = [];
+
     // 초기 설정 화면 표시
     showScreen('settings');
 
@@ -50,9 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
         showScreen('settings');
     });
 
-    // "새로고침" 버튼 이벤트 리스너
+    // **수정된 부분: "새로고침" 버튼 이벤트 리스너**
     refreshButton.addEventListener('click', () => {
-        initializeGame();
+        if (currentUsableData.length === 0) {
+            alert('게임이 시작되지 않았습니다. 먼저 게임을 시작하세요.');
+            return;
+        }
+        initializeGame(currentUsableData);
     });
 
     // 빙고판 크기 변경 시 숫자 범위 자동 조정 및 목표 줄수 최대값 설정
@@ -138,6 +145,15 @@ document.addEventListener('DOMContentLoaded', () => {
         categorySelect.value = "";
 
         initializeSettingsFields();
+
+        // **추가된 부분: 이전 게임 데이터 초기화**
+        bingoContainer.innerHTML = '';
+        messageDiv.classList.add('d-none');
+        markedCells.clear();
+        linesCompleted = 0;
+        completedLineTypes.clear();
+        completedLinesDisplay.textContent = linesCompleted;
+        currentUsableData = [];
     }
 
     function startGame() {
@@ -178,6 +194,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
                 }
+
+                // **추가된 부분: currentUsableData에 저장**
+                currentUsableData = usableData;
 
                 // 목표 줄수 및 완료된 줄수 표시 업데이트
                 targetLinesDisplay.textContent = targetLines;
