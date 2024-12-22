@@ -230,17 +230,27 @@ body {
         font-size: 1rem;
     }
 }
+/* 광고 컨테이너 스타일 */
 .adsense-container {
     width: 100%;
-    max-width: 728px; /* 광고 최대 너비 설정 */
+    max-width: 728px; /* 데스크탑에서의 최대 너비 설정 */
     margin: 20px auto; /* 중앙 정렬 및 상하 마진 설정 */
+    box-sizing: border-box; /* 패딩과 보더 포함 */
+    padding: 10px; /* 내부 여백 설정 */
+    border: 1px solid #ccc; /* 경계선 설정 */
+    overflow: hidden; /* 내용이 넘칠 경우 숨김 처리 */
+    transition: max-height 0.3s ease; /* 부드러운 전환 효과 */
 }
 
+/* 모바일 환경에서 광고 컨테이너의 최대 높이 제한 및 스크롤 설정 */
 @media (max-width: 600px) {
     .adsense-container {
         max-width: 100%; /* 모바일에서는 전체 너비 사용 */
+        max-height: 150px; /* 모바일에서의 최대 높이 설정 */
+        overflow-y: scroll; /* 세로 스크롤 추가 */
     }
 }
+
 /* 모바일 가로 방향 */
 @media (max-width: 768px) and (orientation: landscape) {
     .bingo-wrapper {
@@ -299,7 +309,9 @@ body {
     .screen {
         padding: 10px;
     }
-
+    .adsense-container {
+        max-height: 120px; /* 매우 작은 화면에서는 더 낮은 최대 높이 설정 */
+    }
     .form-select,
     .form-control {
         padding: 6px 10px;
