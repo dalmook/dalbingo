@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (boardSize * boardSize > numberRange) {
+        if (selectedCategory === '숫자' && boardSize * boardSize > numberRange) {
             alert('빙고판의 셀 수가 숫자 범위보다 클 수 없습니다.');
             return;
         }
@@ -169,6 +169,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // 빙고 데이터 로드
         loadBingoData(selectedCategory)
             .then(() => {
+                // 숫자 범위에 따른 데이터 필터링 (숫자 카테고리에만 적용)
+                let usableData = bingoData;
+                if (selectedCategory === '숫자') {
+                    usableData = bingoData.filter(item => item.index >= 1 && item.index <= numberRange);
+                    if (usableData.length < boardSize * boardSize) {
+                        alert(`숫자 범위가 너무 작아 빙고판을 생성할 수 없습니다. 숫자 범위를 늘려주세요.`);
+                        return;
+                    }
+                }
+
                 // 목표 줄수 및 완료된 줄수 표시 업데이트
                 targetLinesDisplay.textContent = targetLines;
                 completedLinesDisplay.textContent = linesCompleted;
@@ -177,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showScreen('game');
 
                 // 게임 초기화
-                initializeGame();
+                initializeGame(usableData);
             })
             .catch(error => {
                 console.error('Error loading bingo data:', error);
@@ -198,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    function initializeGame() {
+    function initializeGame(usableData) {
         // 이전 게임 상태 초기화
         bingoContainer.innerHTML = '';
         messageDiv.classList.add('d-none');
@@ -208,16 +218,20 @@ document.addEventListener('DOMContentLoaded', () => {
         completedLinesDisplay.textContent = linesCompleted;
 
         // 빙고판 생성
-        createBingoGrid();
+        createBingoGrid(usableData);
     }
 
-    function createBingoGrid() {
+    function resetGame() {
+        initializeGame();
+    }
+
+    function createBingoGrid(usableData) {
         // 빙고판 그리드 설정
         bingoContainer.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
         bingoContainer.style.gridTemplateRows = `repeat(${boardSize}, 1fr)`;
 
         // 빙고 데이터에서 무작위로 선택
-        const shuffledData = shuffleArray([...bingoData]);
+        const shuffledData = shuffleArray([...usableData]);
         const selectedBingoNumbers = shuffledData.slice(0, boardSize * boardSize);
 
         selectedBingoNumbers.forEach((item, index) => {
