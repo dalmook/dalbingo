@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let linesCompleted = 0;
     let completedLineTypes = new Set(); // 줄의 완성 여부를 추적
 
-    // **추가된 부분: 현재 사용 중인 usableData를 저장하는 변수**
+    // 현재 사용 중인 usableData를 저장하는 변수
     let currentUsableData = [];
 
     // 초기 설정 화면 표시
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showScreen('settings');
     });
 
-    // **수정된 부분: "새로고침" 버튼 이벤트 리스너**
+    // "새로고침" 버튼 이벤트 리스너
     refreshButton.addEventListener('click', () => {
         if (currentUsableData.length === 0) {
             alert('게임이 시작되지 않았습니다. 먼저 게임을 시작하세요.');
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         initializeSettingsFields();
 
-        // **추가된 부분: 이전 게임 데이터 초기화**
+        // 이전 게임 데이터 초기화
         bingoContainer.innerHTML = '';
         messageDiv.classList.add('d-none');
         markedCells.clear();
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (selectedCategory === '숫자' && boardSize * boardSize > numberRange) {
+        if (boardSize * boardSize > numberRange) {
             alert('빙고판의 셀 수가 숫자 범위보다 클 수 없습니다.');
             return;
         }
@@ -185,17 +185,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // 빙고 데이터 로드
         loadBingoData(selectedCategory)
             .then(() => {
-                // 숫자 범위에 따른 데이터 필터링 (숫자 카테고리에만 적용)
-                let usableData = bingoData;
-                if (selectedCategory === '숫자') {
-                    usableData = bingoData.filter(item => item.index >= 1 && item.index <= numberRange);
-                    if (usableData.length < boardSize * boardSize) {
-                        alert(`숫자 범위가 너무 작아 빙고판을 생성할 수 없습니다. 숫자 범위를 늘려주세요.`);
-                        return;
-                    }
+                // 숫자 범위에 따른 데이터 필터링 (모든 카테고리에 적용)
+                let usableData = bingoData.filter(item => item.index >= 1 && item.index <= numberRange);
+                if (usableData.length < boardSize * boardSize) {
+                    alert(`숫자 범위가 너무 작아 빙고판을 생성할 수 없습니다. 숫자 범위를 늘려주세요.`);
+                    return;
                 }
 
-                // **추가된 부분: currentUsableData에 저장**
+                // 현재 사용 중인 usableData 저장
                 currentUsableData = usableData;
 
                 // 목표 줄수 및 완료된 줄수 표시 업데이트
