@@ -18,7 +18,7 @@ body {
 /* 빙고 셀 스타일 */
 .bingo-cell {
     background-color: #fff;
-    border: 2px solid #ff5733;
+    border: 1.5px solid #ff5733;
     border-radius: 10px;
     display: flex;
     align-items: center;
