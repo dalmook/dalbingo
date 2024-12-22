@@ -230,7 +230,17 @@ body {
         font-size: 1rem;
     }
 }
+.adsense-container {
+    width: 100%;
+    max-width: 728px; /* 광고 최대 너비 설정 */
+    margin: 20px auto; /* 중앙 정렬 및 상하 마진 설정 */
+}
 
+@media (max-width: 600px) {
+    .adsense-container {
+        max-width: 100%; /* 모바일에서는 전체 너비 사용 */
+    }
+}
 /* 모바일 가로 방향 */
 @media (max-width: 768px) and (orientation: landscape) {
     .bingo-wrapper {
